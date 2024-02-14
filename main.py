@@ -1,5 +1,5 @@
 from graph import Graph
-from utils import get_transcription, remove_special_characters, generate_word_partial_phonetic, dijkstra_shortest_path, remove_stress
+from utils import get_transcription, remove_special_characters, generate_word_partial_phonetic, dijkstra_shortest_path
 
 input_text = """
 Chapter One
@@ -62,45 +62,184 @@ His arms—the arms she had so admired earlier—reached out and closed around h
 Copyright © 2007 by Steven Saylor. All rights reserved.
 """
 
+# def create_phonem_graph(input_text):
+#   cleaned_text = remove_special_characters(input_text)
+#   words = cleaned_text.split(' ')
+
+#   transcriptions = [get_transcription(word) for word in words]
+
+#   graph = Graph()
+
+#   for transcription in transcriptions:
+#     if transcription:
+#       # print(transcription)
+#       for i in range(len(transcription)-1):
+#         graph.add_edge(remove_stress(transcription[i]), remove_stress(transcription[i+1]))
+
+#   return graph
+
+# graph = create_phonem_graph(input_text)
+# print(graph)
+# words = input_text.split(' ')
+
+# new_words = []
+
+# for word in words:
+#   new_word = word
+#   if len(word) > 3:
+#     transcription = get_transcription(word)
+#     if transcription:
+#       first_phonem = remove_stress(transcription[0])
+#       last_phonem = remove_stress(transcription[-1])
+#       shortest_path = dijkstra_shortest_path(graph, first_phonem, last_phonem)
+#       new_word = generate_word_partial_phonetic(shortest_path)
+
+#   new_words.append(new_word)
+
+
+# print(" ".join(new_words))
+
+test = "Soon Lara spotted other He did not finish the thought"
+cleaned_text = remove_special_characters(test)
+words = cleaned_text.split(' ')
+syllables = []
+
+def generate_arpabet_transcription(word):
+    arpabet_transcription = []
+    
+    # Define phonetic rules for non-words
+    phonetic_rules = {
+        'fl': ['F', 'L'],      # 'fl' is pronounced as F and L
+        'bl': ['B', 'L'],      # 'bl' is pronounced as B and L
+        'br': ['B', 'R'],      # 'br' is pronounced as B and R
+        'dr': ['D', 'R'],      # 'dr' is pronounced as D and R
+        'kl': ['K', 'L'],      # 'kl' is pronounced as K and L
+        'kr': ['K', 'R'],      # 'kr' is pronounced as K and R
+        'gl': ['G', 'L'],      # 'gl' is pronounced as G and L
+        'gr': ['G', 'R'],      # 'gr' is pronounced as G and R
+        'pl': ['P', 'L'],      # 'pl' is pronounced as P and L
+        'pr': ['P', 'R'],      # 'pr' is pronounced as P and R
+        'sl': ['S', 'L'],      # 'sl' is pronounced as S and L
+        'sr': ['S', 'R'],      # 'sr' is pronounced as S and R
+        'tr': ['T', 'R'],      # 'tr' is pronounced as T and R
+        'tw': ['T', 'W'],      # 'tw' is pronounced as T and W
+        'dw': ['D', 'W'],      # 'dw' is pronounced as D and W
+        'kw': ['K', 'W'],      # 'kw' is pronounced as K and W
+        'sk': ['S', 'K'],      # 'sk' is pronounced as S and K
+        'sw': ['S', 'W'],      # 'sw' is pronounced as S and W
+        'squ': ['S', 'K', 'W'],# 'squ' is pronounced as S, K, and W
+        'bl': ['B', 'L'],      # 'bl' is pronounced as B and L
+        'br': ['B', 'R'],      # 'br' is pronounced as B and R
+        'str': ['S', 'T', 'R'],# 'str' is pronounced as S, T, and R
+        'thr': ['TH', 'R'],    # 'thr' is pronounced as TH and R
+        'fr': ['F', 'R'],      # 'fr' is pronounced as F and R
+        'fl': ['F', 'L'],      # 'fl' is pronounced as F and L
+        'cr': ['K', 'R'],      # 'cr' is pronounced as K and R
+        'cl': ['K', 'L'],      # 'cl' is pronounced as K and L
+        'gl': ['G', 'L'],      # 'gl' is pronounced as G and L
+        'pr': ['P', 'R'],      # 'pr' is pronounced as P and R
+        'pl': ['P', 'L'],      # 'pl' is pronounced as P and L
+        'bl': ['B', 'L'],      # 'bl' is pronounced as B and L
+        'sl': ['S', 'L'],      # 'sl' is pronounced as S and L
+        'gr': ['G', 'R'],      # 'gr' is pronounced as G and R
+        'kl': ['K', 'L'],      # 'kl' is pronounced as K and L
+        'gl': ['G', 'L'],      # 'gl' is pronounced as G and L
+        'kl': ['K', 'L'],      # 'kl' is pronounced as K and L
+        'fl': ['F', 'L'],      # 'fl' is pronounced as F and L
+        'vl': ['V', 'L'],      # 'vl' is pronounced as V and L
+        'sl': ['S', 'L'],      # 'sl' is pronounced as S and L
+        'sl': ['S', 'L'],      # 'sl' is pronounced as S and L
+        'th': ['TH'],          # 'th' is pronounced as TH
+        'ch': ['CH'],          # 'ch' is pronounced as CH
+        'sh': ['SH'],          # 'sh' is pronounced as SH
+        'ng': ['NG'],          # 'ng' is pronounced as NG
+        'ai': ['AY'],          # 'ai' is pronounced as AY
+        'ei': ['EY'],          # 'ei' is pronounced as EY
+        'oi': ['OY'],          # 'oi' is pronounced as OY
+        'au': ['AO'],          # 'au' is pronounced as AO
+        'ou': ['AW'],          # 'ou' is pronounced as AW
+        'zh': ['ZH'],          # 'zh' is pronounced as ZH
+        'a': ['AH'],           # 'a' is pronounced as AH
+        'e': ['EH'],           # 'e' is pronounced as EH
+        'i': ['IH'],           # 'i' is pronounced as IH
+        'o': ['OW'],           # 'o' is pronounced as OW
+        'u': ['AH', 'W'],      # 'u' is pronounced as AH and W
+        'v': ['V'],            # 'v' is pronounced as V
+        'z': ['Z'],            # 'z' is pronounced as Z
+        'm': ['M'],            # 'm' is pronounced as M
+        'n': ['N'],            # 'n' is pronounced as N
+        'k': ['K'],            # 'k' is pronounced as K
+        'p': ['P'],            # 'p' is pronounced as P
+        'b': ['B'],            # 'b' is pronounced as B
+        't': ['T'],            # 't' is pronounced as T
+        'd': ['D'],            # 'd' is pronounced as D
+        'f': ['F'],            # 'f' is pronounced as F
+        'g': ['G'],            # 'g' is pronounced as G
+        's': ['S'],            # 's' is pronounced as S
+        'r': ['R'],            # 'r' is pronounced as R
+        'y': ['Y'],            # 'y' is pronounced as Y
+        'w': ['W'],            # 'w' is pronounced as W
+        'hh': ['HH'],          # 'hh' is pronounced as HH
+        'l': ['L'],            # 'l' is pronounced as L
+        'j': ['JH'],           # 'j' is pronounced as JH
+    }
+    
+    # Split the word into phonetic segments based on known rules
+    segments = []
+    current_segment = ''
+    i = 0
+    while i < len(word):
+        for j in range(len(word), i, -1):
+            if word[i:j] in phonetic_rules:
+                segments.append(phonetic_rules[word[i:j]])
+                i = j
+                break
+        else:  # No rule matched, treat current character as unknown sound
+            if word[i] != '\n':
+              segments.append([word[i].upper()])
+            i += 1
+    
+    # Flatten the segments into a single list
+    arpabet_transcription = [phoneme for segment in segments for phoneme in segment]
+    
+    return arpabet_transcription
+
+
+from syllabipy.sonoripy import SonoriPy
+
+
 def create_phonem_graph(input_text):
   cleaned_text = remove_special_characters(input_text)
+  # print(cleaned_text)
   words = cleaned_text.split(' ')
-
-  transcriptions = [get_transcription(word) for word in words]
+  for word in words:
+    word_syllables = SonoriPy(word)
+    for syllable in word_syllables:
+      syllables.append(syllable)
 
   graph = Graph()
+  start = '__start__'
+  end = '__end__'
 
-  for transcription in transcriptions:
+  for s in syllables:
+    transcription = generate_arpabet_transcription(s)
+    print(transcription)
     if transcription:
-      # print(transcription)
-      for i in range(len(transcription)-1):
-        graph.add_edge(remove_stress(transcription[i]), remove_stress(transcription[i+1]))
+      for i in range(len(transcription)):
+        # print(transcription, transcription[i])
+
+        if i == 0:
+          graph.add_edge(start, transcription[0])
+        elif i == len(transcription)-2:
+          graph.add_edge(transcription[i], transcription[i+1])
+        if i == len(transcription)-1:
+          graph.add_edge(transcription[i], end)
 
   return graph
 
-graph = create_phonem_graph(input_text)
+graph = create_phonem_graph(test)
 print(graph)
-words = input_text.split(' ')
 
-new_words = []
-
-for word in words:
-  new_word = word
-  if len(word) > 3:
-    transcription = get_transcription(word)
-    if transcription:
-      first_phonem = remove_stress(transcription[0])
-      last_phonem = remove_stress(transcription[-1])
-      shortest_path = dijkstra_shortest_path(graph, first_phonem, last_phonem)
-      new_word = generate_word_partial_phonetic(shortest_path)
-
-  new_words.append(new_word)
-
-
-print(" ".join(new_words))
-
-
-
-
-
+p = graph.find_best_paths(50)
+print(p)
 

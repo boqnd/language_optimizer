@@ -58,13 +58,6 @@ def dijkstra_shortest_path(graph, start, end):
     path.reverse()
     return path
 
-
-def remove_stress(phoneme):
-    no_stress = phoneme
-    if phoneme[-1].isdigit():
-        no_stress = phoneme[:-1]
-    return no_stress
-
 def generate_word_partial_phonetic(arpabet):
     arpabet_to_letters_dict = {
         'AA': 'a',
