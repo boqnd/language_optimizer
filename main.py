@@ -1,6 +1,5 @@
-from utils import generate_words
-
-input_text = """
+from translator import Translator
+texta = """
 Chapter One
 A Stop on the Salt Route
 1000 B.C.
@@ -61,10 +60,13 @@ His arms—the arms she had so admired earlier—reached out and closed around h
 Copyright © 2007 by Steven Saylor. All rights reserved.
 """
 
-test = """At her approach, Tarketios rose onto his elbows. He spoke her name in a whisper. There was a quiver of something like desperation in his voice; his neediness made her smile. She sighed and lowered herself beside him. By the faint moonlight, she saw that he wore an amulet of some sort, suspended from a strap of leather around his neck. Nestled amid the hair on his chest, the bit of shapeless metal seemed to capture and concentrate the faint moonlight, casting back a radiance brighter than the moon itself.
-His arms—the arms she had so admired earlier—reached out and closed around her in a surprisingly gentle embrace. His body was as warm and naked as her own, but much bigger and much harder. She wondered if Fascinus was with them in the darkness, for she seemed to feel the beating of wings between their legs as she was entered by the thing that gave origin to life."""
+text = """At her approach, Tarketios rose onto his elbows. He spoke her name in a whisper. There was a quiver of something like desperation in his voice; his neediness made her smile. She sighed and lowered herself beside him. By the faint moonlight, she saw that he wore an amulet of some sort, suspended from a strap of leather around his neck. Nestled amid the hair on his chest, the bit of shapeless metal seemed to capture and concentrate the faint moonlight, casting back a radiance brighter than the moon itself.
+His arms—the arms she had so admired earlier—reached out and closed around her in a surprisingly gentle embrace. His body was as warm and naked as her own, but much bigger and much harder. She wondered if Fascinus was with them in the darkness, for she seemed to feel the beating of wings between their legs as she was entered by the thing that gave origin to life. 2007"""
 
-new_words = generate_words(test, 300)
+texat="asdf asdfa asdfasdf asd fasdf"
+translator = Translator(text)
 
-for word in new_words:
-  print(word)
+translated_text = translator.translate()
+
+print(text)
+print(translated_text)
