@@ -1,62 +1,11 @@
 from nltk.corpus import cmudict
 import re
-import random
-import heapq
 
-pronouncing_dict = cmudict.dict()
-
-def get_transcription(word):
-    transcriptions = pronouncing_dict.get(word.lower())
-    if transcriptions:
-        return transcriptions[0]
-    else:
-        return None
 
 def remove_special_characters(text):
     pattern = r'[^a-zA-Z0-9\s]'
     cleaned_text = re.sub(pattern, '', text)
     return cleaned_text
-
-def dijkstra_shortest_path(graph, start, end):
-    # Initialize distances to all nodes as infinity
-    distances = {node: float('inf') for node in graph.nodes}
-    # Distance from start to start is 0
-    distances[start] = 0
-    # Initialize a priority queue with start node and its distance
-    pq = [(0, start)]
-    # Initialize dictionary to store the previous node in the shortest path
-    previous = {}
-
-    # Dijkstra's algorithm
-    while pq:
-        current_distance, current_node = pq.pop(0)
-
-        # Stop if the current node is the end node
-        if current_node == end:
-            break
-
-        # Visit each neighbor of the current node
-        for neighbor, weight in graph.nodes[current_node].neighbors.items():
-            distance = current_distance + weight
-            # If new distance is shorter than the recorded distance
-            if distance < distances[neighbor]:
-                distances[neighbor] = distance
-                # Update the priority queue with the new distance
-                pq.append((distance, neighbor))
-                # Update the previous node in the shortest path
-                previous[neighbor] = current_node
-                # Sort the priority queue based on distances
-                pq.sort(key=lambda x: -x[0])
-
-    # Construct list of values in each node on the way
-    path = []
-    current = end
-    while current in previous:
-        path.append(current)
-        current = previous[current]
-    path.append(start)
-    path.reverse()
-    return path
 
 def generate_word_partial_phonetic(arpabet):
     arpabet_to_letters_dict = {
@@ -107,6 +56,102 @@ def generate_word_partial_phonetic(arpabet):
             word += arpabet_to_letters_dict[phoneme]
     return word
 
-
-  # syllables = SonoriPy(word)
-  # print("Syllables:", syllables)
+def generate_arpabet_transcription(word):
+    arpabet_transcription = []
+    
+    # Define phonetic rules for non-words
+    phonetic_rules = {
+        'fl': ['F', 'L'],      # 'fl' is pronounced as F and L
+        'bl': ['B', 'L'],      # 'bl' is pronounced as B and L
+        'br': ['B', 'R'],      # 'br' is pronounced as B and R
+        'dr': ['D', 'R'],      # 'dr' is pronounced as D and R
+        'kl': ['K', 'L'],      # 'kl' is pronounced as K and L
+        'kr': ['K', 'R'],      # 'kr' is pronounced as K and R
+        'gl': ['G', 'L'],      # 'gl' is pronounced as G and L
+        'gr': ['G', 'R'],      # 'gr' is pronounced as G and R
+        'pl': ['P', 'L'],      # 'pl' is pronounced as P and L
+        'pr': ['P', 'R'],      # 'pr' is pronounced as P and R
+        'sl': ['S', 'L'],      # 'sl' is pronounced as S and L
+        'sr': ['S', 'R'],      # 'sr' is pronounced as S and R
+        'tr': ['T', 'R'],      # 'tr' is pronounced as T and R
+        'tw': ['T', 'W'],      # 'tw' is pronounced as T and W
+        'dw': ['D', 'W'],      # 'dw' is pronounced as D and W
+        'kw': ['K', 'W'],      # 'kw' is pronounced as K and W
+        'sk': ['S', 'K'],      # 'sk' is pronounced as S and K
+        'sw': ['S', 'W'],      # 'sw' is pronounced as S and W
+        'squ': ['S', 'K', 'W'],# 'squ' is pronounced as S, K, and W
+        'bl': ['B', 'L'],      # 'bl' is pronounced as B and L
+        'br': ['B', 'R'],      # 'br' is pronounced as B and R
+        'str': ['S', 'T', 'R'],# 'str' is pronounced as S, T, and R
+        'thr': ['TH', 'R'],    # 'thr' is pronounced as TH and R
+        'fr': ['F', 'R'],      # 'fr' is pronounced as F and R
+        'fl': ['F', 'L'],      # 'fl' is pronounced as F and L
+        'cr': ['K', 'R'],      # 'cr' is pronounced as K and R
+        'cl': ['K', 'L'],      # 'cl' is pronounced as K and L
+        'gl': ['G', 'L'],      # 'gl' is pronounced as G and L
+        'pr': ['P', 'R'],      # 'pr' is pronounced as P and R
+        'pl': ['P', 'L'],      # 'pl' is pronounced as P and L
+        'bl': ['B', 'L'],      # 'bl' is pronounced as B and L
+        'sl': ['S', 'L'],      # 'sl' is pronounced as S and L
+        'gr': ['G', 'R'],      # 'gr' is pronounced as G and R
+        'kl': ['K', 'L'],      # 'kl' is pronounced as K and L
+        'gl': ['G', 'L'],      # 'gl' is pronounced as G and L
+        'kl': ['K', 'L'],      # 'kl' is pronounced as K and L
+        'fl': ['F', 'L'],      # 'fl' is pronounced as F and L
+        'vl': ['V', 'L'],      # 'vl' is pronounced as V and L
+        'sl': ['S', 'L'],      # 'sl' is pronounced as S and L
+        'sl': ['S', 'L'],      # 'sl' is pronounced as S and L
+        'th': ['TH'],          # 'th' is pronounced as TH
+        'ch': ['CH'],          # 'ch' is pronounced as CH
+        'sh': ['SH'],          # 'sh' is pronounced as SH
+        'ng': ['NG'],          # 'ng' is pronounced as NG
+        'ai': ['AY'],          # 'ai' is pronounced as AY
+        'ei': ['EY'],          # 'ei' is pronounced as EY
+        'oi': ['OY'],          # 'oi' is pronounced as OY
+        'au': ['AO'],          # 'au' is pronounced as AO
+        'ou': ['AW'],          # 'ou' is pronounced as AW
+        'zh': ['ZH'],          # 'zh' is pronounced as ZH
+        'a': ['AH'],           # 'a' is pronounced as AH
+        'e': ['EH'],           # 'e' is pronounced as EH
+        'i': ['IH'],           # 'i' is pronounced as IH
+        'o': ['OW'],           # 'o' is pronounced as OW
+        'u': ['AH', 'W'],      # 'u' is pronounced as AH and W
+        'v': ['V'],            # 'v' is pronounced as V
+        'z': ['Z'],            # 'z' is pronounced as Z
+        'm': ['M'],            # 'm' is pronounced as M
+        'n': ['N'],            # 'n' is pronounced as N
+        'k': ['K'],            # 'k' is pronounced as K
+        'p': ['P'],            # 'p' is pronounced as P
+        'b': ['B'],            # 'b' is pronounced as B
+        't': ['T'],            # 't' is pronounced as T
+        'd': ['D'],            # 'd' is pronounced as D
+        'f': ['F'],            # 'f' is pronounced as F
+        'g': ['G'],            # 'g' is pronounced as G
+        's': ['S'],            # 's' is pronounced as S
+        'r': ['R'],            # 'r' is pronounced as R
+        'y': ['Y'],            # 'y' is pronounced as Y
+        'w': ['W'],            # 'w' is pronounced as W
+        'hh': ['HH'],          # 'hh' is pronounced as HH
+        'l': ['L'],            # 'l' is pronounced as L
+        'j': ['JH'],           # 'j' is pronounced as JH
+    }
+    
+    # Split the word into phonetic segments based on known rules
+    segments = []
+    current_segment = ''
+    i = 0
+    while i < len(word):
+        for j in range(len(word), i, -1):
+            if word[i:j] in phonetic_rules:
+                segments.append(phonetic_rules[word[i:j]])
+                i = j
+                break
+        else:  # No rule matched, treat current character as unknown sound
+            if word[i] != '\n':
+              segments.append([word[i].upper()])
+            i += 1
+    
+    # Flatten the segments into a single list
+    arpabet_transcription = [phoneme for segment in segments for phoneme in segment]
+    
+    return arpabet_transcription
