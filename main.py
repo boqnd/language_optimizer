@@ -63,7 +63,8 @@ His arms—the arms she had so admired earlier—reached out and closed around h
 Copyright © 2007 by Steven Saylor. All rights reserved.
 """
 
-test = "Soon Lara spotted other He did not finish the thought"
+test = """At her approach, Tarketios rose onto his elbows. He spoke her name in a whisper. There was a quiver of something like desperation in his voice; his neediness made her smile. She sighed and lowered herself beside him. By the faint moonlight, she saw that he wore an amulet of some sort, suspended from a strap of leather around his neck. Nestled amid the hair on his chest, the bit of shapeless metal seemed to capture and concentrate the faint moonlight, casting back a radiance brighter than the moon itself.
+His arms—the arms she had so admired earlier—reached out and closed around her in a surprisingly gentle embrace. His body was as warm and naked as her own, but much bigger and much harder. She wondered if Fascinus was with them in the darkness, for she seemed to feel the beating of wings between their legs as she was entered by the thing that gave origin to life."""
 
 def create_phonem_graph(input_text):
   cleaned_text = remove_special_characters(input_text)
@@ -138,43 +139,11 @@ def mark_nucleus(phonem):
 def mark_coda(phonem):
     return phonem+'-'
 
-# def create_phonem_graph(input_text):
-#     cleaned_text = remove_special_characters(input_text)
-#     syllables = []
-
-#     words = cleaned_text.split(' ')
-#     for word in words:
-#         word_syllables = SonoriPy(word)
-#         for syllable in word_syllables:
-#             syllables.append(syllable)
-
-#     graph = Graph()
-#     start = '__start__'
-#     end = '__end__'
-
-#     for s in syllables:
-#         transcription = generate_arpabet_transcription(s)
-#         if transcription:
-#             onset = transcription[0] if len(transcription) >= 1 else None
-#             nucleus = transcription[1] if len(transcription) >= 2 else None
-#             coda = transcription[2:] if len(transcription) >= 3 else []
-
-#             if onset:
-#                 graph.add_edge(start, onset)
-
-#             if nucleus:
-#                 if not coda:  # If there's no coda, connect nucleus directly to end
-#                     graph.add_edge(nucleus, end)
-#                 else:  # If there's coda, connect nucleus to coda
-#                     for phoneme in coda:
-#                         graph.add_edge(nucleus, phoneme)
-
-#     return graph
-
 graph = create_phonem_graph(test)
 print(graph)
 
-pts = graph.find_best_paths(50)
-for p in pts:
-  print(p)
+paths = graph.find_best_paths(50)
+transcriptions = [[phonem[0] for phonem in path[0][1:-1]] for path in paths]
 
+for t in transcriptions:
+  print(t,generate_word_partial_phonetic(t))

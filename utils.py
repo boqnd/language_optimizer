@@ -52,6 +52,7 @@ def generate_word_partial_phonetic(arpabet):
 
     word = ''
     for phoneme in arpabet:
+        phoneme = phoneme[0:-1]
         if phoneme in arpabet_to_letters_dict:
             word += arpabet_to_letters_dict[phoneme]
     return word
@@ -147,8 +148,8 @@ def generate_arpabet_transcription(word):
                 i = j
                 break
         else:  # No rule matched, treat current character as unknown sound
-            if word[i] != '\n':
-              segments.append([word[i].upper()])
+            # if word[i] != '\n':
+            #   segments.append([word[i].upper()])
             i += 1
     
     # Flatten the segments into a single list
