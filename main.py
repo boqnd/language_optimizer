@@ -1,6 +1,4 @@
-from graph import Graph
-from utils import remove_special_characters, generate_word_partial_phonetic, generate_arpabet_transcription
-from syllabipy.sonoripy import SonoriPy
+from utils import generate_words
 
 input_text = """
 Chapter One
@@ -66,84 +64,7 @@ Copyright © 2007 by Steven Saylor. All rights reserved.
 test = """At her approach, Tarketios rose onto his elbows. He spoke her name in a whisper. There was a quiver of something like desperation in his voice; his neediness made her smile. She sighed and lowered herself beside him. By the faint moonlight, she saw that he wore an amulet of some sort, suspended from a strap of leather around his neck. Nestled amid the hair on his chest, the bit of shapeless metal seemed to capture and concentrate the faint moonlight, casting back a radiance brighter than the moon itself.
 His arms—the arms she had so admired earlier—reached out and closed around her in a surprisingly gentle embrace. His body was as warm and naked as her own, but much bigger and much harder. She wondered if Fascinus was with them in the darkness, for she seemed to feel the beating of wings between their legs as she was entered by the thing that gave origin to life."""
 
-def create_phonem_graph(input_text):
-  cleaned_text = remove_special_characters(input_text)
-  syllables = []
+new_words = generate_words(test, 300)
 
-  words = cleaned_text.split(' ')
-  for word in words:
-    word_syllables = SonoriPy(word)
-    for syllable in word_syllables:
-      syllables.append(syllable)
-
-  graph = Graph()
-  start = '__start__'
-  end = '__end__'
-
-  for s in syllables:
-    transcription = generate_arpabet_transcription(s)
-    if transcription:
-      has_onset = False
-      has_nucleous = False
-      has_coda = False
-      for i in range(len(transcription)):
-        print(transcription, transcription[i])
-        if is_vowel(transcription[i]):
-          has_onset = True
-
-        if has_onset and not is_vowel(transcription[i]):
-          has_nucleous = True
-
-        current = transcription[i]
-        if not has_onset:
-          current = mark_onset(current)
-        elif not has_nucleous:
-          current = mark_nucleus(current)
-        else:
-          current = mark_coda(current)
-        print(current)
-        if i == 0:
-          graph.add_edge(start, current)
-        if i <= len(transcription)-2:
-          next = transcription[i+1]
-          if not has_onset:
-            if is_vowel(next):
-              next = mark_nucleus(next)
-            else:
-              next = mark_onset(next)
-          elif not has_nucleous:
-            if is_vowel(next):
-              next = mark_nucleus(next)
-            else:
-              next = mark_coda(next)
-          else:
-            next = mark_coda(next)
-          print(next)
-
-          graph.add_edge(current, next)
-        if i == len(transcription)-1:
-          graph.add_edge(current, end)
-
-  return graph
-
-def is_vowel(phonem):
-  vowels = ['W','Y','UH','UW','OW','OY','IH','IY','EH','ER','EY','AA','AE','AH','AO','AW','AY']
-  return phonem in vowels
-
-def mark_onset(phonem):
-    return phonem+'+'
-
-def mark_nucleus(phonem):
-    return phonem+'.'
-
-def mark_coda(phonem):
-    return phonem+'-'
-
-graph = create_phonem_graph(test)
-print(graph)
-
-paths = graph.find_best_paths(50)
-transcriptions = [[phonem[0] for phonem in path[0][1:-1]] for path in paths]
-
-for t in transcriptions:
-  print(t,generate_word_partial_phonetic(t))
+for word in new_words:
+  print(word)

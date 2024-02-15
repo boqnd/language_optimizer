@@ -1,6 +1,6 @@
-from nltk.corpus import cmudict
 import re
-
+from graph import Graph
+from syllabipy.sonoripy import SonoriPy
 
 def remove_special_characters(text):
     pattern = r'[^a-zA-Z0-9\s]'
@@ -59,8 +59,7 @@ def generate_word_partial_phonetic(arpabet):
 
 def generate_arpabet_transcription(word):
     arpabet_transcription = []
-    
-    # Define phonetic rules for non-words
+
     phonetic_rules = {
         'fl': ['F', 'L'],      # 'fl' is pronounced as F and L
         'bl': ['B', 'L'],      # 'bl' is pronounced as B and L
@@ -136,10 +135,8 @@ def generate_arpabet_transcription(word):
         'l': ['L'],            # 'l' is pronounced as L
         'j': ['JH'],           # 'j' is pronounced as JH
     }
-    
-    # Split the word into phonetic segments based on known rules
+
     segments = []
-    current_segment = ''
     i = 0
     while i < len(word):
         for j in range(len(word), i, -1):
@@ -147,12 +144,91 @@ def generate_arpabet_transcription(word):
                 segments.append(phonetic_rules[word[i:j]])
                 i = j
                 break
-        else:  # No rule matched, treat current character as unknown sound
-            # if word[i] != '\n':
-            #   segments.append([word[i].upper()])
+        else:
             i += 1
-    
-    # Flatten the segments into a single list
-    arpabet_transcription = [phoneme for segment in segments for phoneme in segment]
-    
+
+        arpabet_transcription = [phoneme for segment in segments for phoneme in segment]
+
     return arpabet_transcription
+
+def create_phonem_graph(input_text):
+  cleaned_text = remove_special_characters(input_text)
+  syllables = []
+
+  words = cleaned_text.split(' ')
+  for word in words:
+    word_syllables = SonoriPy(word)
+    for syllable in word_syllables:
+      syllables.append(syllable)
+
+  graph = Graph()
+  start = '__start__'
+  end = '__end__'
+
+  for s in syllables:
+    transcription = generate_arpabet_transcription(s)
+    if transcription:
+      has_onset = False
+      has_nucleous = False
+      has_coda = False
+      for i in range(len(transcription)):
+        print(transcription, transcription[i])
+        if is_vowel(transcription[i]):
+          has_onset = True
+
+        if has_onset and not is_vowel(transcription[i]):
+          has_nucleous = True
+
+        current = transcription[i]
+        if not has_onset:
+          current = mark_onset(current)
+        elif not has_nucleous:
+          current = mark_nucleus(current)
+        else:
+          current = mark_coda(current)
+        print(current)
+        if i == 0:
+          graph.add_edge(start, current)
+        if i <= len(transcription)-2:
+          next = transcription[i+1]
+          if not has_onset:
+            if is_vowel(next):
+              next = mark_nucleus(next)
+            else:
+              next = mark_onset(next)
+          elif not has_nucleous:
+            if is_vowel(next):
+              next = mark_nucleus(next)
+            else:
+              next = mark_coda(next)
+          else:
+            next = mark_coda(next)
+          print(next)
+
+          graph.add_edge(current, next)
+        if i == len(transcription)-1:
+          graph.add_edge(current, end)
+
+  return graph
+
+def is_vowel(phonem):
+  vowels = ['W','Y','UH','UW','OW','OY','IH','IY','EH','ER','EY','AA','AE','AH','AO','AW','AY']
+  return phonem in vowels
+
+def mark_onset(phonem):
+    return phonem+'+'
+
+def mark_nucleus(phonem):
+    return phonem+'.'
+
+def mark_coda(phonem):
+    return phonem+'-'
+
+def generate_words(text, n):
+    graph = create_phonem_graph(text)
+    print(graph)
+
+    paths = graph.find_best_paths(n)
+    transcriptions = [[phonem[0] for phonem in path[0][1:-1]] for path in paths]
+
+    return [generate_word_partial_phonetic(t) for t in transcriptions]
