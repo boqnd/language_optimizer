@@ -98,4 +98,4 @@ class Translator:
             translated_word = translations.get(word)
             translated_text += translated_word + " "
 
-        return translated_text.strip()
+        return (translated_text.strip(), translations)

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation App</title>
+</head>
+<body>
+    <h1>Translation App</h1>
+    <form id="translationForm">
+        <label for="textInput">Enter Text:</label>
+        <input type="text" id="textInput" name="text">
+        <button type="submit">Translate</button>
+    </form>
+
+    <hr>
+
+    <h2>Translation Result</h2>
+    <div id="translationResult"></div>
+
+    <script>
+        document.getElementById("translationForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            var textInput = document.getElementById("textInput").value;
+            var translationResult = document.getElementById("translationResult");
+
+            fetch('http://127.0.0.1:5000/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({text: textInput}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                var translatedText = data.translated_text[0];
+                var translationDictionary = data.translated_text[1];
+
+                var table = "<table border='1'>";
+                for (var key in translationDictionary) {
+                    table += "<tr><td>" + key + "</td><td>" + translationDictionary[key] + "</td></tr>";
+                }
+                table += "</table>";
+
+                translationResult.innerHTML = "<p>Translated Text: " + translatedText + "</p>" + "<p>Translation Dictionary:</p>" + table;
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
