@@ -61,7 +61,7 @@ class Translator:
 
     def assign_translations(self, new_words):
         word_freq = self.get_word_freq()
-        sorted_words = sorted(word_freq, key=word_freq.get, reverse=True)
+        sorted_words = sorted(word_freq, key=word_freq.get, reverse=False)
         translations = {}
 
         for i, word in enumerate(sorted_words):
@@ -73,7 +73,7 @@ class Translator:
     def get_word_freq(self):
         word_freq = {}
 
-        words = self.text.split()
+        words = remove_special_characters(self.text).split()
         for word in words:
             if word in word_freq:
                 word_freq[word] += 1
@@ -93,7 +93,8 @@ class Translator:
 
         translations = self.assign_translations(new_words)
         translated_text = ""
-        words = self.text.split()
+
+        words = remove_special_characters(self.text).split()
         for word in words:
             translated_word = translations.get(word)
             translated_text += translated_word + " "

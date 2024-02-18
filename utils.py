@@ -3,6 +3,7 @@ from graph import Graph
 from syllabipy.sonoripy import SonoriPy
 
 def remove_special_characters(text):
+    text = text.lower()
     pattern = r'[^a-zA-Z0-9\s]'
     cleaned_text = re.sub(pattern, '', text)
     return cleaned_text
